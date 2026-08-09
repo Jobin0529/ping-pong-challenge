@@ -1,0 +1,33 @@
+# Compiled class files
+target/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# Log files
+*.log
+logs/
+pong-service.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.orig
+
+# Lock files (runtime)
+# /tmp/ping-pong-rate.lock
+
+# Maven wrapper
+.mvn/
+mvnw
+mvnw.cmd
+
+# Temporary archives
+*.gz

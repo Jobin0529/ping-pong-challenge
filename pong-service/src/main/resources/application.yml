@@ -1,0 +1,32 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: pong-service
+  main:
+    web-application-type: reactive
+
+# RocketMQ Configuration
+rocketmq:
+  enabled: true  # 启用 RocketMQ
+  endpoints: localhost:8081  # RocketMQ Proxy 地址(gRPC 端口)
+  namespace: ""
+  producer:
+    topic: pong-audit
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.example.pong: DEBUG
+    com.example.common: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

@@ -1,0 +1,55 @@
+server:
+  port: 8080  # 默认端口,多实例启动时通过命令行参数覆盖
+
+spring:
+  application:
+    name: ping-service
+  main:
+    web-application-type: reactive
+  # MongoDB Configuration
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/pingpong
+      database: pingpong
+
+# Pong Service Configuration
+pong:
+  service:
+    url: http://localhost:8082
+    endpoint: /api/pong
+
+# Cross-process Rate Limiter Configuration
+rate:
+  limiter:
+    lock:
+      file: /tmp/ping-pong-rate.lock
+    max:
+      per:
+        second: 2  # 所有 Ping 进程合计最多 2 RPS
+
+# RocketMQ Configuration
+rocketmq:
+  enabled: true  # 启用 RocketMQ
+  endpoints: localhost:8081  # RocketMQ Proxy 地址(gRPC 端口)
+  namespace: ""
+  consumer:
+    group: ping-consumer-group
+    topic: pong-audit
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.example.ping: DEBUG
+    com.example.common: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/ping-service-${server.port}.log
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
