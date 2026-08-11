@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -44,7 +43,7 @@ public class PingService {
     private Integer serverPort;
 
     @Autowired
-    public PingService(WebClient pongWebClient, FileLockRateLimiter rateLimiter, 
+    public PingService(WebClient pongWebClient, FileLockRateLimiter rateLimiter,
                        MongoLogService mongoLogService) {
         this.pongWebClient = pongWebClient;
         this.rateLimiter = rateLimiter;
@@ -70,13 +69,13 @@ public class PingService {
         if (!acquired) {
             log.warn("[Ping #{}] [{}] 请求未发送 - 被本地跨进程速率限制 (RATE_LIMITED_LOCALLY)",
                     messageId, timestamp);
-            
+
             // 保存限流日志到 MongoDB
             PingPongMessage rateLimitedMsg = new PingPongMessage("PING", "Hello", serviceName);
             rateLimitedMsg.setMessageId(messageId);
             rateLimitedMsg.setTimestamp(timestamp);
             mongoLogService.logRateLimitedRequest(rateLimitedMsg, "跨进程速率限制", instanceId);
-            
+
             return RequestResult.RATE_LIMITED_LOCALLY;
         }
 
@@ -93,7 +92,7 @@ public class PingService {
                     .uri(pongEndpoint)
                     .bodyValue(pingMessage)
                     .retrieve()
-                    .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+                    .onStatus(status -> status.is4xxClientError(), clientResponse -> {
                         if (clientResponse.statusCode() == HttpStatus.TOO_MANY_REQUESTS) {
                             log.warn("[Ping #{}] [{}] 请求已发送，Pong 返回 429 限流 (THROTTLED_BY_PONG)",
                                     messageId, timestamp);
@@ -110,12 +109,12 @@ public class PingService {
             if (response != null) {
                 log.info("[Ping #{}] [{}] 请求已发送 & Pong 响应: payload={}, source={} (SENT_AND_RESPONDED)",
                         messageId, timestamp, response.getPayload(), response.getSource());
-                
+
                 // 保存成功日志到 MongoDB
                 mongoLogService.logSuccessRequest(pingMessage, response, responseTimeMs, instanceId);
             } else {
                 log.warn("[Ping #{}] [{}] 请求已发送，但 Pong 响应为空", messageId, timestamp);
-                
+
                 // 保存错误日志到 MongoDB
                 mongoLogService.logErrorRequest(pingMessage, "Pong 响应为空", responseTimeMs, instanceId);
             }
@@ -124,18 +123,18 @@ public class PingService {
 
         } catch (ThrottledException e) {
             long responseTimeMs = System.currentTimeMillis() - startTime;
-            
+
             // 保存被 Pong 限流的日志到 MongoDB
             mongoLogService.logThrottledRequest(pingMessage, responseTimeMs, instanceId);
-            
+
             return RequestResult.THROTTLED_BY_PONG;
         } catch (Exception e) {
             long responseTimeMs = System.currentTimeMillis() - startTime;
             log.error("[Ping #{}] [{}] 请求发送异常: {}", messageId, timestamp, e.getMessage(), e);
-            
+
             // 保存错误日志到 MongoDB
             mongoLogService.logErrorRequest(pingMessage, e.getMessage(), responseTimeMs, instanceId);
-            
+
             return RequestResult.THROTTLED_BY_PONG;
         }
     }

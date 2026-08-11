@@ -7,15 +7,13 @@ spring:
   main:
     web-application-type: reactive
 
-# RocketMQ Configuration
 rocketmq:
-  enabled: true  # 启用 RocketMQ
-  endpoints: localhost:8081  # RocketMQ Proxy 地址(gRPC 端口)
+  enabled: true
+  endpoints: localhost:8081
   namespace: ""
   producer:
     topic: pong-audit
 
-# Logging
 logging:
   level:
     root: INFO
@@ -24,7 +22,6 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
-# Actuator
 management:
   endpoints:
     web:
