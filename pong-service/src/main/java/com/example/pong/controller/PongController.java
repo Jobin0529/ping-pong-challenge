@@ -36,6 +36,8 @@ public class PongController {
 
     @PostMapping("/pong")
     public Mono<PingPongMessage> handlePing(@RequestBody PingPongMessage pingMessage) {
+        // 如果请求中带有 messageId（例如来自上游的追踪ID），则沿用；
+        // 否则生成新的 UUID，用于全链路日志关联
         String messageId = pingMessage.getMessageId() != null ? 
                 pingMessage.getMessageId() : java.util.UUID.randomUUID().toString();
         long timestamp = Instant.now().toEpochMilli();

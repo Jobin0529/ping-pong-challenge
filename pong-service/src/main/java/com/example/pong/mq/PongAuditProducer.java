@@ -1,6 +1,7 @@
 package com.example.pong.mq;
 
 import com.example.common.model.PingPongMessage;
+import javax.annotation.PostConstruct;
 import org.apache.rocketmq.client.apis.ClientServiceProvider;
 import org.apache.rocketmq.client.apis.message.Message;
 import org.apache.rocketmq.client.apis.producer.Producer;
@@ -39,7 +40,11 @@ public class PongAuditProducer {
     public PongAuditProducer(Producer producer) {
         this.producer = producer;
         this.provider = ClientServiceProvider.loadService();
-        log.info("[PongAuditProducer] 初始化完成, topic={}", topic);
+    }
+
+    @PostConstruct
+    public void init() {
+        log.info("[PongAuditProducer] 初始化完成, topic={}, serviceName={}", topic, serviceName);
     }
 
     /**
@@ -49,6 +54,8 @@ public class PongAuditProducer {
      * @param responseMessage 发送的 Pong 响应消息
      */
     public void sendAuditMessage(PingPongMessage pingMessage, PingPongMessage responseMessage) {
+        // 生成独立的审计消息ID（用于追踪本次审计发送，与业务 messageId 解耦）
+        // 这样即使业务 messageId 为空，审计消息仍有自己的唯一标识
         String auditMessageId = java.util.UUID.randomUUID().toString();
         long timestamp = Instant.now().toEpochMilli();
 
