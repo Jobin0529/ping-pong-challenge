@@ -1,5 +1,6 @@
 package com.example.ping.mq;
 
+import javax.annotation.PostConstruct;
 import org.apache.rocketmq.client.apis.consumer.ConsumeResult;
 import org.apache.rocketmq.client.apis.consumer.SimpleConsumer;
 import org.apache.rocketmq.client.apis.message.MessageView;
@@ -35,6 +36,10 @@ public class PongAuditConsumer {
 
     public PongAuditConsumer(SimpleConsumer consumer) {
         this.consumer = consumer;
+    }
+
+    @PostConstruct
+    public void init() {
         log.info("[PongAuditConsumer] 初始化完成, topic={}", topic);
     }
 
